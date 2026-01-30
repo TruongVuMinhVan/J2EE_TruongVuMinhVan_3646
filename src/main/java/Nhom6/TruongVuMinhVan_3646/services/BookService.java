@@ -4,7 +4,6 @@ import Nhom6.TruongVuMinhVan_3646.entities.Book;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import java.util.List;
-import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -15,28 +14,36 @@ public class BookService {
         return books;
     }
 
-    public Optional<Book> getBookById(Long id) {
+    public java.util.Optional<Book> getBookById(Long id) {
         return books.stream()
                 .filter(book -> book.getId().equals(id))
                 .findFirst();
     }
 
     public void addBook(Book book) {
+        if (book.getId() == null) {
+            Long maxId = books.stream()
+                    .map(Book::getId)
+                    .max(Long::compare)
+                    .orElse(0L);
+            book.setId(maxId + 1);
+        }
         books.add(book);
     }
 
     public void updateBook(Book book) {
-        var bookOptional = getBookById(book.getId());
-        if (bookOptional.isPresent()) {
-            Book bookUpdate = bookOptional.get();
-            bookUpdate.setTitle(book.getTitle());
-            bookUpdate.setAuthor(book.getAuthor());
-            bookUpdate.setPrice(book.getPrice());
-            bookUpdate.setCategory(book.getCategory());
-        }
+        books.stream()
+                .filter(b -> b.getId().equals(book.getId()))
+                .findFirst()
+                .ifPresent(b -> {
+                    b.setTitle(book.getTitle());
+                    b.setAuthor(book.getAuthor());
+                    b.setPrice(book.getPrice());
+                    b.setCategory(book.getCategory());
+                });
     }
 
     public void deleteBookById(Long id) {
-        getBookById(id).ifPresent(books::remove);
+        books.removeIf(book -> book.getId().equals(id));
     }
 }
