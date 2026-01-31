@@ -9,7 +9,7 @@ public class HomeController {
     @GetMapping("/")
     public String home() {
         // Chuyển hướng trang chủ về danh sách sách
-        return "redirect:/books";
+        return "home/index";
     }
 }
 

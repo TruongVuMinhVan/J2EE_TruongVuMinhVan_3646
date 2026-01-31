@@ -4,13 +4,11 @@
 <head>
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
-
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
     <title>My App</title>
-    <!-- Đường dẫn tới static resources: src/main/resources/static/bootstrap/... -->
     <link th:fragment="link-css" rel="stylesheet" th:href="@{/bootstrap/css/bootstrap.min.css}">
-    <link th:fragment="custom-css" rel="stylesheet" th:href="@{/bootstrap/css/style.css}">
+    <link th:fragment="custom-css" rel="stylesheet" th:href="@{/css/style.css}">
 </head>
 
 <body class="d-flex flex-column h-100">
@@ -32,6 +30,7 @@
                         <li class="nav-item"><a class="nav-link" href="/books">List
                                 Book</a></li>
                         <li class="nav-item"><a class="nav-link" href="/books/add">Add Book</a></li>
+                        <li class="nav-item"><a class="nav-link" href="/cart">Cart</a></li>
                     </ul>
                 </div>
             </div>
@@ -45,7 +44,7 @@
             <span th:text="${#dates.year(#dates.createNow())}"></span>
             <a href="https://www.hutech.edu.vn/">HUTECH Education</a>
         </div>
-        <script th:src="@{/bootstrap/js/bootstrap.bundle.min.js}"></script>
+        <script th:src="@{/bootstrap/js/bootstrap.min.js}"></script>
         <script th:src="@{/bootstrap/js/jquery-3.7.0.min.js}"></script>
     </footer>
 </body>
