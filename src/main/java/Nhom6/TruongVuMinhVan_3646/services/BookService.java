@@ -3,10 +3,14 @@ package Nhom6.TruongVuMinhVan_3646.services;
 import Nhom6.TruongVuMinhVan_3646.entities.Book;
 import Nhom6.TruongVuMinhVan_3646.repositories.IBookRepository;
 import lombok.RequiredArgsConstructor;
+import jakarta.validation.constraints.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 @Service
@@ -21,20 +25,32 @@ public class BookService {
         logger.debug("Found {} books", books.size());
         return books;
     }
+    
+    public List<Book> getAllBooks(Integer pageNo, Integer pageSize, String sortBy) {
+        logger.debug("Fetching books with pagination - pageNo: {}, pageSize: {}, sortBy: {}", pageNo, pageSize, sortBy);
+        PageRequest pageRequest = PageRequest.of(pageNo, pageSize, Sort.by(sortBy));
+        return bookRepository.findAll(pageRequest).getContent();
+    }
+    
+    public void addBook(@NotNull Book book) {
+        logger.debug("Adding new book: {}", book.getTitle());
+        bookRepository.save(book);
+        logger.debug("Book added successfully");
+    }
 
     public Optional<Book> getBookById(Long id) {
         logger.debug("Fetching book with id: {}", id);
         return bookRepository.findById(id);
     }
 
-    public void updateBook(Book book) {
-        logger.debug("Updating book with id: {}", book.getId());
-        if (book.getId() != null && bookRepository.existsById(book.getId())) {
-            bookRepository.save(book);
-            logger.debug("Book updated successfully");
-        } else {
-            logger.warn("Book with id {} not found for update", book.getId());
-        }
+    public void updateBook(@NotNull Book book) {
+        Book existingBook = bookRepository.findById(book.getId())
+                .orElse(null);
+        Objects.requireNonNull(existingBook).setTitle(book.getTitle());
+        existingBook.setAuthor(book.getAuthor());
+        existingBook.setPrice(book.getPrice());
+        existingBook.setCategory(book.getCategory());
+        bookRepository.save(existingBook);
     }
 
     public void deleteBookById(Long id) {
@@ -45,5 +61,9 @@ public class BookService {
         } else {
             logger.warn("Book with id {} not found for deletion", id);
         }
+    }
+
+    public List<Book> searchBook(String keyword) {
+        return bookRepository.searchBook(keyword);
     }
 }

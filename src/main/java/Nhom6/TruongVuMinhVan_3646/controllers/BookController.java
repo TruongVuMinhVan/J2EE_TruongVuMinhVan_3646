@@ -1,13 +1,22 @@
 package Nhom6.TruongVuMinhVan_3646.controllers;
 
 import Nhom6.TruongVuMinhVan_3646.entities.Book;
+import Nhom6.TruongVuMinhVan_3646.daos.Item;
 import Nhom6.TruongVuMinhVan_3646.services.BookService;
+import Nhom6.TruongVuMinhVan_3646.services.CartService;
+import Nhom6.TruongVuMinhVan_3646.services.CategoryService;
+import jakarta.servlet.http.HttpSession;
 import Nhom6.TruongVuMinhVan_3646.repositories.ICategoryRepository;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+
+import jakarta.validation.constraints.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.context.support.DefaultMessageSourceResolvable;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
 @Controller
@@ -16,42 +25,85 @@ import org.springframework.web.bind.annotation.*;
 public class BookController {
     private final BookService bookService;
     private final ICategoryRepository categoryRepository;
+    private final CartService cartService;
+    private final CategoryService categoryService;
     private static final Logger logger = LoggerFactory.getLogger(BookController.class);
 
     @GetMapping
-    public String showAllBooks(Model model) {
-        logger.debug("Calling showAllBooks endpoint");
-        try {
-            var books = bookService.getAllBooks();
-            logger.debug("Retrieved {} books from database", books.size());
-            model.addAttribute("books", books);
-            model.addAttribute("totalPages", 1);
-            model.addAttribute("currentPage", 0);
-            return "book/list";
-        } catch (Exception e) {
-            logger.error("Error in showAllBooks", e);
-            throw e;
+    public String showAllBooks(Model model,
+            @RequestParam(defaultValue = "0") Integer pageNo,
+            @RequestParam(defaultValue = "20") Integer pageSize,
+            @RequestParam(defaultValue = "id") String sortBy) {
+        model.addAttribute("books", bookService.getAllBooks(pageNo,
+                pageSize, sortBy));
+        model.addAttribute("currentPage", pageNo);
+        model.addAttribute("totalPages",
+                bookService.getAllBooks(pageNo, pageSize, sortBy).size() / pageSize);
+        model.addAttribute("categories",
+                categoryService.getAllCategories());
+        return "book/list";
+    }
+
+    @GetMapping("/add")
+    public String addBookForm(Model model) {
+        model.addAttribute("book", new Book());
+        model.addAttribute("categories",
+                categoryService.getAllCategories());
+        return "book/add";
+    }
+
+    @PostMapping("/add")
+    public String addBook(
+            @Valid @ModelAttribute("book") Book book,
+            BindingResult bindingResult,
+            Model model) {
+        if (bindingResult.hasErrors()) {
+            var errors = bindingResult.getAllErrors()
+                    .stream()
+                    .map(DefaultMessageSourceResolvable::getDefaultMessage)
+                    .toArray(String[]::new);
+            model.addAttribute("errors", errors);
+            model.addAttribute("categories",
+                    categoryService.getAllCategories());
+            return "book/add";
         }
+        bookService.addBook(book);
+        return "redirect:/books";
+    }
+
+    @PostMapping("/add-to-cart")
+    public String addToCart(HttpSession session,
+            @RequestParam long id,
+            @RequestParam String name,
+            @RequestParam double price,
+            @RequestParam(defaultValue = "1") int quantity) {
+        var cart = cartService.getCart(session);
+        cart.addItems(new Item(id, name, price, quantity));
+        cartService.updateCart(session, cart);
+        return "redirect:/books";
     }
 
     @GetMapping("/edit/{id}")
     public String editBookForm(Model model, @PathVariable long id) {
-        var book = bookService.getBookById(id).orElse(null);
-        model.addAttribute("book", book != null ? book : new Book());
-        model.addAttribute("categories", categoryRepository.findAll());
+        var book = bookService.getBookById(id);
+        model.addAttribute("book", book.orElseThrow(() -> new IllegalArgumentException("Book not found")));
+        model.addAttribute("categories", categoryService.getAllCategories());
         return "book/edit";
     }
 
     @PostMapping("/edit")
-    public String editBook(@ModelAttribute("book") Book book, @RequestParam(required = false) Long categoryId) {
-        logger.debug("Editing book with id: {}, categoryId: {}", book.getId(), categoryId);
-        if (categoryId != null && categoryId > 0) {
-            var category = categoryRepository.findById(categoryId).orElse(null);
-            book.setCategory(category);
-            logger.debug("Category set to: {}", category);
-        } else {
-            book.setCategory(null);
-            logger.debug("Category set to null");
+    public String editBook(@Valid @ModelAttribute("book") Book book,
+            BindingResult bindingResult,
+            Model model) {
+        if (bindingResult.hasErrors()) {
+            var errors = bindingResult.getAllErrors()
+                    .stream()
+                    .map(DefaultMessageSourceResolvable::getDefaultMessage)
+                    .toArray(String[]::new);
+            model.addAttribute("errors", errors);
+            model.addAttribute("categories",
+                    categoryService.getAllCategories());
+            return "book/edit";
         }
         bookService.updateBook(book);
         return "redirect:/books";
@@ -59,8 +111,31 @@ public class BookController {
 
     @GetMapping("/delete/{id}")
     public String deleteBook(@PathVariable long id) {
-        if (bookService.getBookById(id).isPresent())
-            bookService.deleteBookById(id);
+        bookService.getBookById(id)
+                .ifPresentOrElse(
+                        book -> bookService.deleteBookById(id),
+                        () -> {
+                            throw new IllegalArgumentException("Book not found");
+                        });
         return "redirect:/books";
     }
+
+    @GetMapping("/search")
+    public String searchBook(
+            @NotNull Model model,
+            @RequestParam String keyword,
+            @RequestParam(defaultValue = "0") Integer pageNo,
+            @RequestParam(defaultValue = "20") Integer pageSize,
+            @RequestParam(defaultValue = "id") String sortBy) {
+        model.addAttribute("books", bookService.searchBook(keyword));
+        model.addAttribute("currentPage", pageNo);
+        model.addAttribute("totalPages",
+                bookService
+                        .getAllBooks(pageNo, pageSize, sortBy)
+                        .size() / pageSize);
+        model.addAttribute("categories",
+                categoryService.getAllCategories());
+        return "book/list";
+    }
+
 }
