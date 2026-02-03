@@ -64,4 +64,11 @@ public class CartController {
         logger.debug("Item added to cart. Total items in cart: {}", cartService.getSumQuantity(session));
         return "redirect:/books";
     }
+
+    @GetMapping("/checkout")
+    public String checkout(HttpSession session) {
+        cartService.saveCart(session);
+        cartService.removeCart(session);
+        return "redirect:/books?checkout=success";
+    }
 }

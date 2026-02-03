@@ -1,13 +1,19 @@
 package Nhom6.TruongVuMinhVan_3646.daos;
 
-import lombok.Data;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
-@Data
 public class Cart {
     private List<Item> cartItems = new ArrayList<>();
+
+    public List<Item> getCartItems() {
+        return cartItems;
+    }
+
+    public void setCartItems(List<Item> cartItems) {
+        this.cartItems = cartItems;
+    }
 
     public void addItems(Item item) {
         var existingItem = cartItems.stream()

@@ -31,3 +31,9 @@ build/
 
 ### VS Code ###
 .vscode/
+
+### Application Config & Secrets (QUAN TRỌNG) ###
+# Chặn file cấu hình chứa mật khẩu, key
+src/main/resources/application.properties
+src/main/resources/application.yml
+.env
