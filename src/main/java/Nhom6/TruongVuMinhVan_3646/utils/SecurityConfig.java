@@ -48,7 +48,8 @@ public class SecurityConfig {
                 return http
                                 .authorizeHttpRequests(auth -> auth
                                                 .requestMatchers("/css/**", "/js/**", "/bootstrap/**", "/",
-                                                                "/oauth/**", "/register", "/error", "/login", "/logout")
+                                                                "/oauth/**", "/register", "/error", "/login", "/logout",
+                                                                "/api/**")
                                                 .permitAll()
 
                                                 .requestMatchers("/books/edit/**",
@@ -56,8 +57,6 @@ public class SecurityConfig {
                                                                 "/books/add", "/books/delete")
                                                 .hasAnyAuthority("ADMIN")
                                                 .requestMatchers("/books", "/cart", "/cart/**")
-                                                .hasAnyAuthority("ADMIN", "USER")
-                                                .requestMatchers("/api/**")
                                                 .hasAnyAuthority("ADMIN", "USER")
                                                 .anyRequest().authenticated())
                                 .logout(logout -> logout
