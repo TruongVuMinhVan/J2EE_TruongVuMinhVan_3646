@@ -1,8 +1,6 @@
 package Nhom6.TruongVuMinhVan_3646.controllers;
 
 import Nhom6.TruongVuMinhVan_3646.services.BookService;
-import Nhom6.TruongVuMinhVan_3646.services.CategoryService;
-import Nhom6.TruongVuMinhVan_3646.services.CartService;
 import Nhom6.TruongVuMinhVan_3646.viewmodel.BookGetVm;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -15,8 +13,6 @@ import java.util.List;
 @RequiredArgsConstructor
 public class ApiController {
     private final BookService bookService;
-    private final CategoryService categoryService;
-    private final CartService cartService;
 
     @GetMapping("/books")
     public ResponseEntity<List<BookGetVm>> getAllBooks(Integer pageNo,

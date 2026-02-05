@@ -50,7 +50,8 @@
                 <h3>Total: <span th:text="${totalPrice}"></span></h3>
             </div>
             <div class="col-md-12 text-center">
-                <a class="btn btn-success" th:href="@{/cart/checkout}">Checkout</a>
+                <a class="btn btn-success" th:href="@{/cart/checkout}">Checkout (COD)</a>
+                <a class="btn btn-primary" th:href="@{/cart/checkoutVNPay}">Checkout (VNPay)</a>
                 <a class="btn btn-danger" th:href="@{/cart/clearCart}">Clear Cart</a>
             </div>
         </div>

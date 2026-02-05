@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.*;
 @RequiredArgsConstructor
 public class CartController {
     private final CartService cartService;
+    private final Nhom6.TruongVuMinhVan_3646.services.VNPayService vnPayService;
     private static final Logger logger = LoggerFactory.getLogger(CartController.class);
 
     @GetMapping
@@ -41,8 +42,8 @@ public class CartController {
             @PathVariable Long id,
             @PathVariable int quantity) {
         var cart = cartService.getCart(session);
-        cart.updateItems(Math.toIntExact(id), quantity);
-        return "book/cart";
+        cart.updateItems(id, quantity);
+        return "redirect:/cart";
     }
 
     @GetMapping("/clearCart")
@@ -68,7 +69,41 @@ public class CartController {
     @GetMapping("/checkout")
     public String checkout(HttpSession session) {
         cartService.saveCart(session);
-        cartService.removeCart(session);
         return "redirect:/books?checkout=success";
+    }
+
+    @GetMapping("/checkoutVNPay")
+    public String checkoutVNPay(HttpSession session, jakarta.servlet.http.HttpServletRequest request) {
+        var cart = cartService.getCart(session);
+        if (cart.getCartItems().isEmpty()) {
+            return "redirect:/cart";
+        }
+        long amount = (long) (cartService.getSumPrice(session));
+        String orderInfo = "Thanh toan don hang qua VNPay";
+        String baseUrl = request.getScheme() + "://" + request.getServerName() + ":" + request.getServerPort();
+        String vnpayUrl = vnPayService.createPaymentUrl(amount, orderInfo, baseUrl);
+        return "redirect:" + vnpayUrl;
+    }
+
+    @GetMapping("/vnpay-payment-return")
+    public String vnpayReturn(jakarta.servlet.http.HttpServletRequest request, HttpSession session, Model model) {
+        int paymentStatus = vnPayService.orderReturn(request);
+
+        String orderInfo = request.getParameter("vnp_OrderInfo");
+        String paymentTime = request.getParameter("vnp_PayDate");
+        String transactionId = request.getParameter("vnp_TransactionNo");
+        String totalPrice = request.getParameter("vnp_Amount");
+
+        model.addAttribute("orderId", orderInfo);
+        model.addAttribute("totalPrice", totalPrice);
+        model.addAttribute("paymentTime", paymentTime);
+        model.addAttribute("transactionId", transactionId);
+
+        if (paymentStatus == 1) {
+            cartService.saveCart(session);
+            return "book/order-success";
+        } else {
+            return "book/order-fail";
+        }
     }
 }

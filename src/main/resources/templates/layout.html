@@ -7,9 +7,15 @@
 
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <title>My App</title>
+    <title>HUTECH Bookstore</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"
+        rel="stylesheet">
+    <link th:fragment="link-css" rel="stylesheet" th:href="@{/bootstrap/css/bootstrap.min.css}">
     <link th:fragment="link-css" rel="stylesheet" th:href="@{/bootstrap/css/bootstrap.min.css}">
     <link th:fragment="custom-css" rel="stylesheet" th:href="@{/css/style.css}">
+    <th:block layout:fragment="css"></th:block>
 </head>
 
 <body class="d-flex flex-column h-100">
@@ -17,6 +23,7 @@
         <nav class="navbar navbar-expand-lg navbar-light bg-light">
             <div class="container-fluid">
                 <a class="navbar-brand" href="/">HUTECH</a>
+                <span sec:authorize="hasAuthority('ADMIN')" class="fw-bold text-danger ms-2">ADMIN</span>
 
                 <button class="navbar-toggler" type="button" data-bs-toggle="collapse"
                     data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent"

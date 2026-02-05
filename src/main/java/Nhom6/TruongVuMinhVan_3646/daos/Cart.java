@@ -19,11 +19,10 @@ public class Cart {
         var existingItem = cartItems.stream()
                 .filter(i -> Objects.equals(i.getBookId(), item.getBookId()))
                 .findFirst();
-        
+
         if (existingItem.isPresent()) {
             existingItem.get().setQuantity(
-                existingItem.get().getQuantity() + item.getQuantity()
-            );
+                    existingItem.get().getQuantity() + item.getQuantity());
         } else {
             cartItems.add(item);
         }
@@ -34,10 +33,10 @@ public class Cart {
                 bookId));
     }
 
-    public void updateItems(int bookId, int quantity) {
+    public void updateItems(Long bookId, int quantity) {
         cartItems.stream()
                 .filter(item -> Objects.equals(item
-                        .getBookId(), (long) bookId))
+                        .getBookId(), bookId))
                 .forEach(item -> item.setQuantity(quantity));
     }
 }
