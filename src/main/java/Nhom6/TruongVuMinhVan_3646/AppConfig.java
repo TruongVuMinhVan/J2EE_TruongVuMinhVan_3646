@@ -1,7 +1,16 @@
 package Nhom6.TruongVuMinhVan_3646;
 
 import org.springframework.context.annotation.Configuration;
+import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
+import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 @Configuration
-public class AppConfig {
+public class AppConfig implements WebMvcConfigurer {
+
+    @Override
+    public void addResourceHandlers(ResourceHandlerRegistry registry) {
+        // Serve uploaded book images from the file system
+        registry.addResourceHandler("/images/books/**")
+                .addResourceLocations("file:src/main/resources/static/images/books/");
+    }
 }

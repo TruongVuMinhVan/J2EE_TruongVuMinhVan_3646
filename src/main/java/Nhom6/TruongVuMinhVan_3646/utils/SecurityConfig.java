@@ -53,11 +53,13 @@ public class SecurityConfig {
                                                 .permitAll()
 
                                                 .requestMatchers("/books/edit/**",
-
-                                                                "/books/add", "/books/delete")
+                                                                "/books/add", "/books/delete",
+                                                                "/books/category/**")
                                                 .hasAnyAuthority("ADMIN")
-                                                .requestMatchers("/books", "/cart", "/cart/**")
+                                                .requestMatchers("/books", "/cart", "/cart/**", "/orders", "/orders/**")
                                                 .hasAnyAuthority("ADMIN", "USER")
+                                                .requestMatchers("/images/**")
+                                                .permitAll()
                                                 .anyRequest().authenticated())
                                 .logout(logout -> logout
                                                 .logoutUrl("/logout")

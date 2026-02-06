@@ -17,38 +17,120 @@ scale=1.0">
     <th:block th:replace="~{layout :: header}"></th:block>
     <div class="container">
         <h1>Edit Book</h1>
-        <form th:action="@{/books/edit}" th:object="${book}" method="post">
-            <input type="hidden" th:field="*{id}">
-            <div class="col-6 mb-3">
-                <label class="form-label" for="title">Title:</label>
-                <input class="form-control" type="text" th:field="*{title}" id="title" required autofocus>
-                <span class="text-danger" th:if="${#fields.hasErrors('title')}" th:errors="*{title}"></span>
+        <form th:action="@{/books/edit}" th:object="${book}" method="post" enctype="multipart/form-data">
+            <input type="hidden" th:field="*{id}" />
+            <input type="hidden" th:field="*{image}" />
+
+            <div class="row">
+                <div class="col-md-8">
+                    <div class="mb-3">
+                        <label class="form-label" for="title">Title:</label><span class="text-danger">*</span>
+                        <input class="form-control" type="text" th:field="*{title}" id="title" required autofocus>
+                        <span class="text-danger" th:if="${#fields.hasErrors('title')}" th:errors="*{title}"></span>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label" for="author">Author:</label>
+                        <input class="form-control" type="text" th:field="*{author}" id="author">
+                        <span class="text-danger" th:if="${#fields.hasErrors('author')}" th:errors="*{author}"></span>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label" for="price">Price:</label><span class="text-danger">*</span>
+                        <input class="form-control" required type="text" th:field="*{price}" id="price">
+                        <span class="text-danger" th:if="${#fields.hasErrors('price')}" th:errors="*{price}"></span>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label" for="category">Category:</label><span class="text-danger">*</span>
+                        <select class="form-control" id="category" name="category.id">
+                            <option value="">-- Select Category --</option>
+                            <option th:each="category : ${categories}" th:value="${category.getId()}"
+                                th:text="${category.getName()}" th:selected="${category.getId() == book.category.id}">
+                            </option>
+                        </select>
+                        <span class="text-danger" th:if="${#fields.hasErrors('category')}"
+                            th:errors="*{category}"></span>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="mb-3">
+                        <label class="form-label" for="imageFile">Book Image</label>
+                        <input type="file" name="imageFile" id="imageFile" accept="image/*" class="form-control"
+                            onchange="previewImage(this)">
+
+                        <div class="preview-container" id="previewContainer" title="Drag & Drop or Paste Image here">
+                            <span class="text-muted small text-center" id="placeholderEnv"
+                                th:style="${book.image != null} ? 'display:none' : 'display:block'">No
+                                Image<br>Drag/Paste here</span>
+                            <img id="imagePreview" th:src="@{'/images/books/' + ${book.image}}" alt="Image Preview"
+                                th:style="${book.image != null} ? 'display:block' : 'display:none'">
+                        </div>
+                        <small class="text-muted">Accepts .jpg, .png</small>
+                    </div>
+                </div>
             </div>
-            <div class="col-6 mb-3">
-                <label class="form-label" for="author">Author:</label>
-                <input class="form-control" type="text" th:field="*{author}" id="author">
-                <span class="text-danger" th:if="${#fields.hasErrors('author')}" th:errors="*{author}"></span>
-            </div>
-            <div class="col-6 mb-3">
-                <label class="form-label" for="price">Price:</label>
-                <input class="form-control" type="text" th:field="*{price}" id="price">
-                <span class="text-danger" th:if="${#fields.hasErrors('price')}" th:errors="*{price}"></span>
-            </div>
-            <div class="col-6 mb-3">
-                <label class="form-label" for="category">Category:</label><span class="text-danger">*</span>
-                <select class="form-control" id="category" name="category.id">
-                    <option value="">-- Select Category --</option>
-                    <option th:each="category : ${categories}" th:value="${category.getId()}"
-                        th:text="${category.getName()}" th:selected="${category.getId() == book.category.getId()}">
-                    </option>
-                </select>
-            </div>
-            <input type="submit" class="btn btn-primary" value="Save">
+
+            <input type="submit" class="btn btn-primary" value="Save" />
         </form>
         <br>
         <a th:href="@{/books}">Back to List</a>
     </div>
     <th:block th:replace="~{layout :: footer}"></th:block>
+    <script>
+        function previewImage(input) {
+            const preview = document.getElementById('imagePreview');
+            const placeholder = document.getElementById('placeholderEnv');
+
+            if (input.files && input.files[0]) {
+                const reader = new FileReader();
+                reader.onload = function (e) {
+                    preview.src = e.target.result;
+                    preview.style.display = 'block';
+                    placeholder.style.display = 'none';
+                }
+                reader.readAsDataURL(input.files[0]);
+            } else {
+                // Assuming if clearing input, revert to original image not supported easily without more JS state
+                // Just clear for now
+                // preview.src = '#';
+                // preview.style.display = 'none';
+                // placeholder.style.display = 'block';
+            }
+        }
+
+        // Drag and Drop
+        const dropZone = document.getElementById('previewContainer');
+        const fileInput = document.getElementById('imageFile');
+
+        dropZone.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            dropZone.style.borderColor = '#4e73df';
+            dropZone.style.backgroundColor = '#f8f9fc';
+        });
+
+        dropZone.addEventListener('dragleave', (e) => {
+            e.preventDefault();
+            dropZone.style.borderColor = '#ccc';
+            dropZone.style.backgroundColor = 'transparent';
+        });
+
+        dropZone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            dropZone.style.borderColor = '#ccc';
+            dropZone.style.backgroundColor = 'transparent';
+
+            if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+                fileInput.files = e.dataTransfer.files;
+                previewImage(fileInput);
+            }
+        });
+
+        // Paste Image
+        document.addEventListener('paste', (e) => {
+            if (e.clipboardData && e.clipboardData.files && e.clipboardData.files.length > 0) {
+                fileInput.files = e.clipboardData.files;
+                previewImage(fileInput);
+            }
+        });
+    </script>
 </body>
 
 </html>

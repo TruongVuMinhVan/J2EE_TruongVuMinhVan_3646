@@ -19,6 +19,8 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+import java.io.IOException;
 
 @Controller
 @RequestMapping("/books")
@@ -41,7 +43,7 @@ public class BookController {
                         model.addAttribute("books", bookPage.getContent());
                         model.addAttribute("currentPage", pageNo);
                         model.addAttribute("totalPages", bookPage.getTotalPages());
-                        model.addAttribute("categories", categoryService.getAllCategories());
+                        model.addAttribute("categories", categoryService.getActiveCategories());
                         return "book/list";
                 } catch (Exception e) {
                         logger.error("Error in showAllBooks: ", e);
@@ -62,6 +64,7 @@ public class BookController {
         public String addBook(
                         @Valid @ModelAttribute("book") Book book,
                         BindingResult bindingResult,
+                        @RequestParam("imageFile") MultipartFile imageFile,
                         Model model) {
                 if (bindingResult.hasErrors()) {
                         var errors = bindingResult.getAllErrors()
@@ -72,6 +75,14 @@ public class BookController {
                         model.addAttribute("categories",
                                         categoryService.getAllCategories());
                         return "book/add";
+                }
+                try {
+                        String filename = bookService.saveImage(imageFile);
+                        if (filename != null) {
+                                book.setImage(filename);
+                        }
+                } catch (IOException e) {
+                        e.printStackTrace(); // Handle error appropriately
                 }
                 bookService.addBook(book);
                 return "redirect:/books";
@@ -100,6 +111,7 @@ public class BookController {
         @PostMapping("/edit")
         public String editBook(@Valid @ModelAttribute("book") Book book,
                         BindingResult bindingResult,
+                        @RequestParam("imageFile") MultipartFile imageFile,
                         Model model) {
                 if (bindingResult.hasErrors()) {
                         var errors = bindingResult.getAllErrors()
@@ -110,6 +122,26 @@ public class BookController {
                         model.addAttribute("categories",
                                         categoryService.getAllCategories());
                         return "book/edit";
+                }
+
+                // Get existing book to preserve image if no new one uploaded
+                var existingBook = bookService.getBookById(book.getId());
+
+                try {
+                        String filename = bookService.saveImage(imageFile);
+                        if (filename != null && !filename.isEmpty()) {
+                                // New image uploaded
+                                book.setImage(filename);
+                        } else if (existingBook.isPresent()) {
+                                // Keep existing image
+                                book.setImage(existingBook.get().getImage());
+                        }
+                } catch (IOException e) {
+                        // On error, keep existing image
+                        if (existingBook.isPresent()) {
+                                book.setImage(existingBook.get().getImage());
+                        }
+                        e.printStackTrace();
                 }
                 bookService.updateBook(book);
                 return "redirect:/books";
@@ -140,6 +172,29 @@ public class BookController {
                 model.addAttribute("totalPages", 1); // For search, just show one page or implement paginated search
                 model.addAttribute("categories", categoryService.getAllCategories());
                 return "book/list";
+        }
+
+        @GetMapping("/category/delete/{id}")
+        public String deleteCategory(@PathVariable Long id) {
+                categoryService.deleteCategoryById(id);
+                return "redirect:/books";
+        }
+
+        @PostMapping("/category/add")
+        public String addCategory(@RequestParam String name) {
+                var category = new Nhom6.TruongVuMinhVan_3646.entities.Category();
+                category.setName(name);
+                categoryService.addCategory(category);
+                return "redirect:/books";
+        }
+
+        @PostMapping("/category/edit/{id}")
+        public String editCategory(@PathVariable Long id, @RequestParam String name) {
+                categoryService.getCategoryById(id).ifPresent(category -> {
+                        category.setName(name);
+                        categoryService.updateCategory(category);
+                });
+                return "redirect:/books";
         }
 
 }

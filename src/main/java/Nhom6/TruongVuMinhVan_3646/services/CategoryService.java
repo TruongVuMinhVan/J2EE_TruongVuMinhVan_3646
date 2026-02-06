@@ -18,8 +18,14 @@ import java.util.Optional;
 public class CategoryService {
     private final ICategoryRepository categoryRepository;
 
+    // For Admin: Get all categories including deleted ones
     public List<Category> getAllCategories() {
         return categoryRepository.findAll();
+    }
+
+    // For User: Get only active (non-deleted) categories
+    public List<Category> getActiveCategories() {
+        return categoryRepository.findByIsDeletedFalse();
     }
 
     public Optional<Category> getCategoryById(@NotNull Long id) {
@@ -39,7 +45,19 @@ public class CategoryService {
         categoryRepository.save(existingCategory);
     }
 
+    // Soft delete: Mark category as deleted instead of removing from DB
     public void deleteCategoryById(@NotNull Long id) {
-        categoryRepository.deleteById(id);
+        Category category = categoryRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Category not found with id: " + id));
+        category.setDeleted(true);
+        categoryRepository.save(category);
+    }
+
+    // Restore deleted category
+    public void restoreCategoryById(@NotNull Long id) {
+        Category category = categoryRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Category not found with id: " + id));
+        category.setDeleted(false);
+        categoryRepository.save(category);
     }
 }

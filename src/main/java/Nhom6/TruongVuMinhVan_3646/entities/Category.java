@@ -18,10 +18,13 @@ public class Category {
     @Size(min = 1, max = 50, message = "Name must be between 1 and 50 characters")
     @NotBlank(message = "Name must not be blank")
     private String name;
+    @Column(name = "is_deleted")
+    private boolean isDeleted = false; // Soft delete flag
     @OneToMany(mappedBy = "category", cascade = CascadeType.ALL)
     private List<Book> books = new ArrayList<>();
 
-    public Category() {}
+    public Category() {
+    }
 
     public Category(Long id, String name, List<Book> books) {
         this.id = id;
@@ -51,6 +54,14 @@ public class Category {
 
     public void setBooks(List<Book> books) {
         this.books = books;
+    }
+
+    public boolean isDeleted() {
+        return isDeleted;
+    }
+
+    public void setDeleted(boolean deleted) {
+        isDeleted = deleted;
     }
 
     @Override

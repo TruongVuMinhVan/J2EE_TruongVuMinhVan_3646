@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security" lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chi tiết đơn hàng</title>
+    <th:block th:replace="~{layout::link-css}"></th:block>
+    <th:block th:replace="~{layout::custom-css}"></th:block>
+</head>
+
+<body>
+    <th:block th:replace="~{layout::header}"></th:block>
+
+    <div class="container py-4">
+        <div class="row justify-content-center">
+            <div class="col-lg-8">
+                <div class="order-detail-card">
+                    <!-- Header -->
+                    <div class="order-detail-header">
+                        <div>
+                            <h3>Đơn hàng #<span th:text="${order.id}">123</span></h3>
+                            <p class="text-muted mb-0">
+                                Ngày đặt: <span
+                                    th:text="${#dates.format(order.invoiceDate, 'dd/MM/yyyy HH:mm')}">01/01/2026</span>
+                            </p>
+                        </div>
+                        <span class="badge badge-lg"
+                            th:classappend="${order.status == 'PAID'} ? 'badge-paid' : (${order.status == 'PENDING'} ? 'badge-pending' : 'badge-cancelled')"
+                            th:text="${order.status == 'PAID'} ? 'Đã thanh toán' : (${order.status == 'PENDING'} ? 'Chờ thanh toán' : 'Đã hủy')">
+                            Status
+                        </span>
+                    </div>
+
+                    <!-- Items List -->
+                    <div class="order-items">
+                        <h5 class="mb-3">📦 Sản phẩm</h5>
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Sách</th>
+                                    <th class="text-center">Số lượng</th>
+                                    <th class="text-end">Giá</th>
+                                    <th class="text-end">Thành tiền</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr th:each="item : ${order.itemInvoices}">
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            <img th:if="${item.book.image != null}"
+                                                th:src="@{'/images/books/' + ${item.book.image}}"
+                                                class="order-item-image me-3" alt="Book">
+                                            <div th:unless="${item.book.image != null}"
+                                                class="order-item-placeholder me-3">
+                                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="40"
+                                                    height="60" fill="#bdc3c7">
+                                                    <path
+                                                        d="M6,2H18A2,2 0 0,1 20,4V20A2,2 0 0,1 18,22H6A2,2 0 0,1 4,20V4A2,2 0 0,1 6,2M6,4V20H18V4H6Z"
+                                                        opacity="0.5" />
+                                                </svg>
+                                            </div>
+                                            <div>
+                                                <strong th:text="${item.book.title}">Book Title</strong>
+                                                <br>
+                                                <small class="text-muted" th:text="${item.book.author}">Author</small>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td class="text-center" th:text="${item.quantity}">1</td>
+                                    <td class="text-end"
+                                        th:text="${#numbers.formatDecimal(item.book.price, 0, 'COMMA', 0, 'POINT')} + ' đ'">
+                                        50.000 đ</td>
+                                    <td class="text-end"
+                                        th:text="${#numbers.formatDecimal(item.book.price * item.quantity, 0, 'COMMA', 0, 'POINT')} + ' đ'">
+                                        50.000 đ</td>
+                                </tr>
+                            </tbody>
+                            <tfoot>
+                                <tr>
+                                    <td colspan="3" class="text-end"><strong>Tổng cộng:</strong></td>
+                                    <td class="text-end order-total-price"
+                                        th:text="${#numbers.formatDecimal(order.price, 0, 'COMMA', 0, 'POINT')} + ' đ'">
+                                        100.000 đ</td>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+
+                    <!-- Actions -->
+                    <div class="order-actions">
+                        <a th:href="@{/orders}" class="btn btn-secondary">← Quay lại</a>
+                        <form th:if="${order.status == 'PENDING'}" th:action="@{/orders/{id}/cancel(id=${order.id})}"
+                            method="post" style="display: inline;">
+                            <button type="submit" class="btn btn-danger"
+                                onclick="return confirm('Bạn có chắc muốn hủy đơn hàng này?')">
+                                ❌ Hủy đơn hàng
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <th:block th:replace="~{layout::footer}"></th:block>
+</body>
+
+</html>

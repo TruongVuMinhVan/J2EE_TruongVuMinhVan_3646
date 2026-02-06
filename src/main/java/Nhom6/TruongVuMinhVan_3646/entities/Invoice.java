@@ -19,6 +19,8 @@ public class Invoice {
     private Date invoiceDate = new Date();
     @Column(name = "total")
     private Double price;
+    @Column(name = "status")
+    private String status = "PENDING"; // PENDING, PAID, CANCELLED
     @OneToMany(mappedBy = "invoice", cascade = CascadeType.ALL)
     private List<ItemInvoice> itemInvoices = new ArrayList<>();
 
@@ -70,6 +72,14 @@ public class Invoice {
 
     public void setUser(User user) {
         this.user = user;
+    }
+
+    public String getStatus() {
+        return status;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
     }
 
     @Override

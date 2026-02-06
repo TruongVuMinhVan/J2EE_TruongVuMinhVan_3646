@@ -1,14 +1,21 @@
 package Nhom6.TruongVuMinhVan_3646.controllers;
 
+import Nhom6.TruongVuMinhVan_3646.entities.User;
+import Nhom6.TruongVuMinhVan_3646.repositories.IUserRepository;
 import Nhom6.TruongVuMinhVan_3646.services.CartService;
 import Nhom6.TruongVuMinhVan_3646.daos.Item;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.Optional;
 
 @Controller
 @RequestMapping("/cart")
@@ -16,7 +23,40 @@ import org.springframework.web.bind.annotation.*;
 public class CartController {
     private final CartService cartService;
     private final Nhom6.TruongVuMinhVan_3646.services.VNPayService vnPayService;
+    private final IUserRepository userRepository;
     private static final Logger logger = LoggerFactory.getLogger(CartController.class);
+
+    private User getCurrentUser() {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        if (auth == null || !auth.isAuthenticated() || auth.getPrincipal().equals("anonymousUser")) {
+            return null;
+        }
+
+        String email = null;
+        Object principal = auth.getPrincipal();
+
+        if (principal instanceof OAuth2User) {
+            // OAuth2 login (Google)
+            OAuth2User oauth2User = (OAuth2User) principal;
+            email = oauth2User.getAttribute("email");
+        } else if (principal instanceof org.springframework.security.core.userdetails.User) {
+            // Form login - username is actually the email
+            email = ((org.springframework.security.core.userdetails.User) principal).getUsername();
+        } else if (principal instanceof User) {
+            return (User) principal;
+        }
+
+        if (email != null) {
+            Optional<User> userOpt = userRepository.findByEmail(email);
+            if (userOpt.isPresent()) {
+                return userOpt.get();
+            }
+            // Try by username as fallback
+            return userRepository.findByUsername(email).orElse(null);
+        }
+
+        return null;
+    }
 
     @GetMapping
     public String showCart(HttpSession session,
@@ -68,7 +108,8 @@ public class CartController {
 
     @GetMapping("/checkout")
     public String checkout(HttpSession session) {
-        cartService.saveCart(session);
+        User user = getCurrentUser();
+        cartService.saveCart(session, "PENDING", user);
         return "redirect:/books?checkout=success";
     }
 
@@ -99,8 +140,10 @@ public class CartController {
         model.addAttribute("paymentTime", paymentTime);
         model.addAttribute("transactionId", transactionId);
 
+        User user = getCurrentUser();
+
         if (paymentStatus == 1) {
-            cartService.saveCart(session);
+            cartService.saveCart(session, "PAID", user);
             return "book/order-success";
         } else {
             return "book/order-fail";

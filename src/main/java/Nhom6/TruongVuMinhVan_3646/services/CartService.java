@@ -55,12 +55,20 @@ public class CartService {
     }
 
     public void saveCart(@NotNull HttpSession session) {
+        saveCart(session, "PENDING", null);
+    }
+
+    public void saveCart(@NotNull HttpSession session, String status, Nhom6.TruongVuMinhVan_3646.entities.User user) {
         var cart = getCart(session);
         if (cart.getCartItems().isEmpty())
             return;
         var invoice = new Invoice();
         invoice.setInvoiceDate(new Date(new Date().getTime()));
         invoice.setPrice(getSumPrice(session));
+        invoice.setStatus(status);
+        if (user != null) {
+            invoice.setUser(user);
+        }
         invoiceRepository.save(invoice);
         cart.getCartItems().forEach(item -> {
             var items = new ItemInvoice();
@@ -69,8 +77,7 @@ public class CartService {
             Long bookId = item.getBookId();
             if (bookId != null) {
                 items.setBook(bookRepository.findById(bookId).orElseThrow(
-                    () -> new RuntimeException("Book not found with id: " + bookId)
-                ));
+                        () -> new RuntimeException("Book not found with id: " + bookId)));
             }
             itemInvoiceRepository.save(items);
         });

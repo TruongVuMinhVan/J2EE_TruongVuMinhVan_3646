@@ -13,8 +13,11 @@
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"
         rel="stylesheet">
     <link th:fragment="link-css" rel="stylesheet" th:href="@{/bootstrap/css/bootstrap.min.css}">
-    <link th:fragment="link-css" rel="stylesheet" th:href="@{/bootstrap/css/bootstrap.min.css}">
-    <link th:fragment="custom-css" rel="stylesheet" th:href="@{/css/style.css}">
+    <!-- Split CSS Files -->
+    <link th:fragment="custom-css" rel="stylesheet" th:href="@{/css/base.css}">
+    <link th:fragment="custom-css" rel="stylesheet" th:href="@{/css/components.css}">
+    <link th:fragment="custom-css" rel="stylesheet" th:href="@{/css/books.css}">
+    <link th:fragment="custom-css" rel="stylesheet" th:href="@{/css/payment.css}">
     <th:block layout:fragment="css"></th:block>
 </head>
 
@@ -37,17 +40,27 @@
                         </li>
                         <li class="nav-item" sec:authorize="hasAnyAuthority('ADMIN','USER')">
                             <a class="nav-link" href="/books">
-                                List Book
+                                DS sách
                             </a>
                         </li>
-                        <li class="nav-item" sec:authorize="hasAnyAuthority('ADMIN')">
+                        <!-- <li class="nav-item" sec:authorize="hasAnyAuthority('ADMIN')">
                             <a class="nav-link" href="/books/add">
-                                Add Book
+                                Thêm sách
                             </a>
-                        </li>
+                        </li> -->
                         <li class="nav-item" sec:authorize="hasAnyAuthority('ADMIN','USER')">
                             <a class="nav-link" href="/cart">
-                                Cart
+                                Giỏ hàng
+                            </a>
+                        </li>
+                        <li class="nav-item" sec:authorize="hasAuthority('USER')">
+                            <a class="nav-link" href="/orders">
+                                Đơn hàng
+                            </a>
+                        </li>
+                        <li class="nav-item" sec:authorize="hasAuthority('ADMIN')">
+                            <a class="nav-link" href="/orders">
+                                Lịch sử giao dịch
                             </a>
                         </li>
                         <li sec:authorize="isAuthenticated()">

@@ -33,15 +33,21 @@ public class Book {
     @OneToMany(mappedBy = "book", cascade = CascadeType.ALL)
     private List<ItemInvoice> itemInvoices = new ArrayList<>();
 
-    public Book() {}
+    @Column(name = "image")
+    private String image;
 
-    public Book(Long id, String title, String author, Double price, Category category, List<ItemInvoice> itemInvoices) {
+    public Book() {
+    }
+
+    public Book(Long id, String title, String author, Double price, Category category, List<ItemInvoice> itemInvoices,
+            String image) {
         this.id = id;
         this.title = title;
         this.author = author;
         this.price = price;
         this.category = category;
         this.itemInvoices = itemInvoices;
+        this.image = image;
     }
 
     public Long getId() {
@@ -90,6 +96,14 @@ public class Book {
 
     public void setItemInvoices(List<ItemInvoice> itemInvoices) {
         this.itemInvoices = itemInvoices;
+    }
+
+    public String getImage() {
+        return image;
+    }
+
+    public void setImage(String image) {
+        this.image = image;
     }
 
     @Override

@@ -31,6 +31,7 @@ public class Role implements GrantedAuthority {
     private String description;
     @ManyToMany(mappedBy = "roles", cascade = CascadeType.ALL)
     @ToString.Exclude
+    @Builder.Default
     private Set<User> users = new HashSet<>();
 
     @Override

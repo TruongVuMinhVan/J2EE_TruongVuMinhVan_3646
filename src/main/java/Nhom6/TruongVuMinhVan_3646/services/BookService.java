@@ -13,6 +13,13 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import org.springframework.web.multipart.MultipartFile;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -51,7 +58,24 @@ public class BookService {
         existingBook.setAuthor(book.getAuthor());
         existingBook.setPrice(book.getPrice());
         existingBook.setCategory(book.getCategory());
+        if (book.getImage() != null) {
+            existingBook.setImage(book.getImage());
+        }
         bookRepository.save(existingBook);
+    }
+
+    public String saveImage(MultipartFile file) throws IOException {
+        if (file.isEmpty()) {
+            return null;
+        }
+        Path uploadPath = Paths.get("src/main/resources/static/images/books");
+        if (!Files.exists(uploadPath)) {
+            Files.createDirectories(uploadPath);
+        }
+        String filename = UUID.randomUUID().toString() + "_" + file.getOriginalFilename();
+        Path filePath = uploadPath.resolve(filename);
+        Files.copy(file.getInputStream(), filePath, StandardCopyOption.REPLACE_EXISTING);
+        return filename;
     }
 
     public void deleteBookById(Long id) {

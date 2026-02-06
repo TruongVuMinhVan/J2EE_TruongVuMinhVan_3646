@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security" lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lịch sử đơn hàng</title>
+    <th:block th:replace="~{layout::link-css}"></th:block>
+    <th:block th:replace="~{layout::custom-css}"></th:block>
+</head>
+
+<body>
+    <th:block th:replace="~{layout::header}"></th:block>
+
+    <div class="container py-4">
+        <h2 class="page-title mb-4" th:text="${isAdmin} ? '📋 Lịch sử giao dịch' : '📋 Lịch sử đơn hàng'">📋 Lịch sử đơn
+            hàng</h2>
+
+        <!-- Status Filter Tabs -->
+        <ul class="nav nav-tabs mb-4">
+            <li class="nav-item">
+                <a class="nav-link" th:classappend="${currentStatus == 'ALL' || currentStatus == null} ? 'active'"
+                    th:href="@{/orders}">Tất cả</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" th:classappend="${currentStatus == 'PAID'} ? 'active'"
+                    th:href="@{/orders(status='PAID')}">✅ Đã thanh toán</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" th:classappend="${currentStatus == 'PENDING'} ? 'active'"
+                    th:href="@{/orders(status='PENDING')}">⏳ Chờ thanh toán</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" th:classappend="${currentStatus == 'CANCELLED'} ? 'active'"
+                    th:href="@{/orders(status='CANCELLED')}">❌ Đã hủy</a>
+            </li>
+        </ul>
+
+        <!-- Orders List -->
+        <div class="row g-4" th:if="${!#lists.isEmpty(orders)}">
+            <div class="col-md-6 col-lg-4" th:each="order : ${orders}">
+                <div class="order-card">
+                    <div class="order-card-header">
+                        <span class="order-id">#<span th:text="${order.id}">123</span></span>
+                        <span class="badge"
+                            th:classappend="${order.status == 'PAID'} ? 'badge-paid' : (${order.status == 'PENDING'} ? 'badge-pending' : 'badge-cancelled')"
+                            th:text="${order.status == 'PAID'} ? 'Đã thanh toán' : (${order.status == 'PENDING'} ? 'Chờ thanh toán' : 'Đã hủy')">
+                            Status
+                        </span>
+                    </div>
+                    <div class="order-card-body">
+                        <!-- Show user info for Admin -->
+                        <div th:if="${isAdmin}" class="order-info">
+                            <span class="order-label">👤 Khách hàng:</span>
+                            <span class="order-value"
+                                th:text="${order.user != null ? order.user.email : 'N/A'}">user@email.com</span>
+                        </div>
+                        <div class="order-info">
+                            <span class="order-label">📅 Ngày đặt:</span>
+                            <span class="order-value"
+                                th:text="${#dates.format(order.invoiceDate, 'dd/MM/yyyy HH:mm')}">01/01/2026</span>
+                        </div>
+                        <div class="order-info">
+                            <span class="order-label">📦 Số sản phẩm:</span>
+                            <span class="order-value" th:text="${#lists.size(order.itemInvoices)}">3</span>
+                        </div>
+                        <div class="order-total">
+                            <span class="order-label">💰 Tổng tiền:</span>
+                            <span class="order-price"
+                                th:text="${#numbers.formatDecimal(order.price, 0, 'COMMA', 0, 'POINT')} + ' đ'">100.000
+                                đ</span>
+                        </div>
+                    </div>
+                    <div class="order-card-footer">
+                        <a th:href="@{/orders/{id}(id=${order.id})}" class="btn btn-outline-primary btn-sm">
+                            Chi tiết
+                        </a>
+                        <form th:if="${order.status == 'PENDING'}" th:action="@{/orders/{id}/cancel(id=${order.id})}"
+                            method="post" style="display: inline;">
+                            <button type="submit" class="btn btn-outline-danger btn-sm"
+                                onclick="return confirm('Bạn có chắc muốn hủy đơn hàng này?')">
+                                ❌ Hủy đơn
+                            </button>
+                        </form>
+                        <form th:action="@{/orders/{id}/delete(id=${order.id})}" method="post" style="display: inline;">
+                            <button type="submit" class="btn btn-outline-danger btn-sm"
+                                onclick="return confirm('Bạn có chắc muốn xóa giao dịch này?')">
+                                Xóa
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Empty State -->
+        <div th:if="${#lists.isEmpty(orders)}" class="text-center py-5">
+            <h4>Không có đơn hàng nào</h4>
+            <p class="text-muted">Hãy mua sách để tạo đơn hàng đầu tiên!</p>
+            <a th:href="@{/books}" class="btn btn-primary">🛒 Mua sách ngay</a>
+        </div>
+    </div>
+
+    <th:block th:replace="~{layout::footer}"></th:block>
+</body>
+
+</html>
