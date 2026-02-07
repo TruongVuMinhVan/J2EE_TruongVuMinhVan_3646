@@ -27,6 +27,15 @@ public class BookService {
     private final IBookRepository bookRepository;
     private static final Logger logger = LoggerFactory.getLogger(BookService.class);
 
+    // Get all active (non-deleted) books for users
+    public List<Book> getActiveBooks() {
+        logger.debug("Fetching active books from repository");
+        List<Book> books = bookRepository.findByIsDeletedFalse();
+        logger.debug("Found {} active books", books.size());
+        return books;
+    }
+
+    // Get all books including deleted (for admin)
     public List<Book> getAllBooks() {
         logger.debug("Fetching all books from repository");
         List<Book> books = bookRepository.findAll();
@@ -34,14 +43,16 @@ public class BookService {
         return books;
     }
 
-    public Page<Book> getAllBooks(Integer pageNo, Integer pageSize, String sortBy) {
-        logger.debug("Fetching books with pagination - pageNo: {}, pageSize: {}, sortBy: {}", pageNo, pageSize, sortBy);
+    public Page<Book> getActiveBooks(Integer pageNo, Integer pageSize, String sortBy) {
+        logger.debug("Fetching active books with pagination - pageNo: {}, pageSize: {}, sortBy: {}", pageNo, pageSize,
+                sortBy);
         PageRequest pageRequest = PageRequest.of(pageNo, pageSize, Sort.by(sortBy));
-        return bookRepository.findAll(pageRequest);
+        return bookRepository.findByIsDeletedFalse(pageRequest);
     }
 
     public void addBook(@NotNull Book book) {
         logger.debug("Adding new book: {}", book.getTitle());
+        book.setDeleted(false);
         bookRepository.save(book);
         logger.debug("Book added successfully");
     }
@@ -78,14 +89,24 @@ public class BookService {
         return filename;
     }
 
+    // Soft delete - mark as deleted instead of removing from DB
     public void deleteBookById(Long id) {
-        logger.debug("Deleting book with id: {}", id);
-        if (bookRepository.existsById(id)) {
-            bookRepository.deleteById(id);
-            logger.debug("Book deleted successfully");
-        } else {
-            logger.warn("Book with id {} not found for deletion", id);
-        }
+        logger.debug("Soft deleting book with id: {}", id);
+        bookRepository.findById(id).ifPresent(book -> {
+            book.setDeleted(true);
+            bookRepository.save(book);
+            logger.debug("Book soft deleted successfully");
+        });
+    }
+
+    // Restore a soft-deleted book
+    public void restoreBookById(Long id) {
+        logger.debug("Restoring book with id: {}", id);
+        bookRepository.findById(id).ifPresent(book -> {
+            book.setDeleted(false);
+            bookRepository.save(book);
+            logger.debug("Book restored successfully");
+        });
     }
 
     public List<Book> searchBook(String keyword) {

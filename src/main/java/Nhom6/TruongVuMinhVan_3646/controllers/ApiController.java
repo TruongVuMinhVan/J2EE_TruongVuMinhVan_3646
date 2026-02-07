@@ -17,7 +17,7 @@ public class ApiController {
     @GetMapping("/books")
     public ResponseEntity<List<BookGetVm>> getAllBooks(Integer pageNo,
             Integer pageSize, String sortBy) {
-        return ResponseEntity.ok(bookService.getAllBooks(
+        return ResponseEntity.ok(bookService.getActiveBooks(
                 pageNo == null ? 0 : pageNo, pageSize == null ? 20 : pageSize,
                 sortBy == null ? "id" : sortBy)
                 .stream()

@@ -63,9 +63,12 @@
                                 Lịch sử giao dịch
                             </a>
                         </li>
-                        <li sec:authorize="isAuthenticated()">
-                            <form th:action="@{/logout}" method="post">
-                                <button class="btn btn-outline-danger" type="submit">Logout</button>
+                        <li class="nav-item d-flex align-items-center" sec:authorize="isAuthenticated()">
+                            <span class="navbar-text me-3">
+                                👤 <span sec:authentication="name">User</span>
+                            </span>
+                            <form th:action="@{/logout}" method="post" class="mb-0">
+                                <button class="btn btn-outline-danger btn-sm" type="submit">Logout</button>
                             </form>
                         </li>
                         <li sec:authorize="!isAuthenticated()">

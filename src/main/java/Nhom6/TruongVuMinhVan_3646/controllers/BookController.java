@@ -39,7 +39,8 @@ public class BookController {
                         @RequestParam(defaultValue = "id") String sortBy) {
                 logger.info("Entering showAllBooks - pageNo: {}, pageSize: {}, sortBy: {}", pageNo, pageSize, sortBy);
                 try {
-                        Page<Book> bookPage = bookService.getAllBooks(pageNo, pageSize, sortBy);
+                        // Use getActiveBooks to show only non-deleted books
+                        Page<Book> bookPage = bookService.getActiveBooks(pageNo, pageSize, sortBy);
                         model.addAttribute("books", bookPage.getContent());
                         model.addAttribute("currentPage", pageNo);
                         model.addAttribute("totalPages", bookPage.getTotalPages());

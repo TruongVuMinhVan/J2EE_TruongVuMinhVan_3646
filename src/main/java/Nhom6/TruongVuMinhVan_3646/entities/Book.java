@@ -36,6 +36,9 @@ public class Book {
     @Column(name = "image")
     private String image;
 
+    @Column(name = "is_deleted")
+    private boolean isDeleted = false; // Soft delete flag
+
     public Book() {
     }
 
@@ -104,6 +107,14 @@ public class Book {
 
     public void setImage(String image) {
         this.image = image;
+    }
+
+    public boolean isDeleted() {
+        return isDeleted;
+    }
+
+    public void setDeleted(boolean deleted) {
+        isDeleted = deleted;
     }
 
     @Override
